@@ -24,8 +24,18 @@ def postContent(new_post : Post):
     content = new_post.model_dump()
     print(type(content))
     content.update({ "zipcode": randrange(0,10000 )})
-    return {"message" : "Posted Data Successfully", "data" : content}
+    my_posts.append(content)
+    return {"message" : "Posted Data Successfully", "data" : my_posts}
 
+def get_content(zipcode):
+    for i in my_posts:
+        if i['zipcode'] == zipcode:
+            return i
+
+@app.get("/getpost/{zipcode}")
+def get_post(zipcode: int):
+    print(zipcode)
+    return get_content(zipcode)
 
 
 
