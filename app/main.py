@@ -1,13 +1,33 @@
-from socket import fromfd
-
-from socket import fromfd
-
-from fastapi import FastAPI, HTTPException, Response, status
-import pydantic
-from typing import Optional
+from contextlib import asynccontextmanager
 from random import randrange
+from typing import Optional
+import pydantic
+from fastapi import FastAPI, HTTPException, Response, status
+from fastapi.params import Depends
+from sqlalchemy.orm import Session, defer
+import models
+from database import engine, SessionLocal
 
-app  = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("App is going to start")
+    print("step1" "step2" "step3", sep=" ")
+
+    models.Base.metadata.create_all(bind=engine)
+    yield
+    print("App is closing now")
+    print("Good Bye")
+
+app  = FastAPI(lifespan=lifespan)
+
+
+
+
+def get_db():
+    session = SessionLocal()
+    yield session
 
 class Post(pydantic.BaseModel):
     name : str
@@ -59,4 +79,15 @@ def delete_post(id: int):
             return "Item delete from list"
     print("Coming out of loop")
     return "Item not found"
+
+@app.get("/sqlalchemy")
+def testing_db_connection(db: Session = Depends(get_db)):
+    posts = db.query(models.User).all()
+    return {"Message" : "Success", "data" :  posts}
+
+
+
+
+
+
 
